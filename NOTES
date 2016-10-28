@@ -1,0 +1,84 @@
+---------------------------------------------------------------------
+TODO / Review
+---------------------------------------------------------------------
+- Bias neuron
+  - Currently there is one bias neuron for each and every layer. But do we need this? Should be sufficient to just have one bias neuron, for example in the input layer and connect that to all the other neurons in the network?
+
+
+- Activation function
+  - Possible other functions to implement
+    - Gaussian
+    - Linear
+    - Step (binary)
+
+
+- Normalization
+  - Create normalization helper functions
+
+
+- Make weights into objects
+  - This makes it easy to access them from some centralized place
+- Make all objects avalible through centralized stores?
+
+
+- Make next layer and previous layer links in neuron and layer class?
+
+
+- Save functions should be filtered a bit. Meaning, we don't need to save training and control data etc.
+
+
+---------------------------------------------------------------------
+Random notes
+---------------------------------------------------------------------
+Training algo / Backpropagation algo
+  - Gradient decent
+  - Genetic
+
+Full-batch training vs Mini-batch training vs Online training
+
+Autoencoder
+
+
+Treshold function in neuron before activation function!?
+
+Overfitting
+  - Dropout
+  - Weight decay
+  - Weight sharing
+  - Early stopping
+  - Model averaging
+  - Bayesian fitting of neural nets
+  - Generative pre-training
+
+
+Error calculation
+  - Mean squared error (MSE)
+  - Root mean squered error (RMS/RMSE)
+  - Arctan
+
+Cost function?
+  - Softmax
+Cross-entropy
+
+
+Learning rate
+Momentum
+
+
+Network architecture types
+  - Feed farward network
+  - Recurrent neural network
+  - Symetrically connected network
+
+Unlabeled/unsupervised/feature extraction/pattern recognition
+  - Restricted boltzman machine
+  - Autoencoders
+
+Labeled/supervised/classifier
+  - Reccurent network
+  - Recursive neural tenser network
+  - Convolutional network
+  - Deep belif network
+
+
+Reinforcement learning?
