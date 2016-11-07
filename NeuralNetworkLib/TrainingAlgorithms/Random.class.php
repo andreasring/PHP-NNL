@@ -30,9 +30,9 @@ class Random {
    * Attempt to train the network
    *
    */
-  public static function train($network, $config) {
+  public function __construct($network, $config = []) {
     $this->network = $network;
-    $this->config = $config;
+    $this->config = $this->readConfig($config);
 
     $this->run();
   }
@@ -51,6 +51,8 @@ class Random {
     ];
 
     array_merge($config, $overrideConfig);
+
+    return $config;
   }
 
 
@@ -60,25 +62,34 @@ class Random {
    *
    */
   private function run() {
-    $bestOutcomes = [];
-    $bestOutcomesNum = $this->config['bestOutcomesNum'];
-    $trainingRounds = $this->config['trainingRounds'];
+    $bestOutcomes     = [];
+    $outputDir        = $this->config['outputDir'];
+    $bestOutcomesNum  = $this->config['bestOutcomesNum'];
+    $trainingRounds   = $this->config['trainingRounds'];
+
+    $network          = $this->network;
+    $trainingDatas    = $network->trainingData;
 
     for($i=0;$i<$trainingRounds;$i++) {
 
-      $error = 0;
-      foreach($this->trainingData as $trainingData) {
+      $error = 0.0;
+      foreach($trainingDatas as $trainingData) {
         $networkInputData = $trainingData[0];
-        $expectedOutput   = $trainingData[1];
-        $networkOutput    = $this->calculate($networkInputData);
+        $expectedOutputs  = $trainingData[1];
+        $networkOutputs   = $network->calculate($networkInputData);
 
-        // THIS NEEDS TO BE GENERALIZED: ATM JUST CHECKING ERROR FOR THE FIRST OUTPUT/INPUT
-        //$innerError = abs($expectedOutput[0] - $networkOutput[0]);
-        $innerError = abs($expectedOutput[0] - $networkOutput[0]);
+        $innerError = 0.0;
+        foreach($networkOutputs as $index => $networkOutput) {
+          $expectedOutput = $expectedOutputs[$index];
+          //$innerError += exp($expectedOutput - $networkOutput);
+          $innerError += exp($expectedOutput - $networkOutput);
+        }
+        $innerError = $innerError / count($networkOutputs);
+        //$innerError = sqrt($innerError);
+
         $error += $innerError;
       }
-      $error = $error/count($this->trainingData);
-      //$error = sqrt($error);
+      $error = $error/count($trainingDatas);
 
       array_push($bestOutcomes, $error);
       sort($bestOutcomes);
@@ -89,15 +100,14 @@ class Random {
       $rank = array_search($error, $bestOutcomes);
       if($rank !== FALSE) {
         // We are one of the nest best! Save us!
-        $this->save('top_'.$bestOutcomesNum.'_net_'.$rank.'.net');
+        $network->save('top_'.$bestOutcomesNum.'_net_'.$rank.'.net');
       }
 
-      //var_dump($bestOutcomes);
 
       // Randomly change all synapse weights
-      $synapses = $this->allSynapses();
+      $synapses = $network->allSynapses();
       foreach($synapses as $synapse) {
-        $synapse->setWeight($this->generateRandomWeight());
+        $synapse->setWeight($network->generateRandomWeight());
       }
 
     }
@@ -105,7 +115,7 @@ class Random {
     var_dump($bestOutcomes);
 
     echo('Setting network to the best one saved.<br>');
-    $this->load('top_'.$bestOutcomesNum.'_net_0.net');
+    $network->load('top_'.$bestOutcomesNum.'_net_0.net');
   }
 
 }

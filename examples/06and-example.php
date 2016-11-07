@@ -4,10 +4,13 @@
 
   $network = new NeuralNetworkLib\Networks\FeedForwardNetwork(2, [4], 1);
 
-  $network->addTrainingData([1, 0], [1]);
-  $network->addTrainingData([0, 1], [1]);
   $network->addTrainingData([1, 1], [0]);
-  $network->addTrainingData([0, 0], [0]);
+
+
+  //$network->addTrainingData([1, 0], [1]);
+  //$network->addTrainingData([0, 1], [1]);
+  //$network->addTrainingData([1, 1], [0]);
+  //$network->addTrainingData([0, 0], [0]);
 
   $network->train();
 

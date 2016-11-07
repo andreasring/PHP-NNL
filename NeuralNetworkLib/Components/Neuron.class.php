@@ -1,6 +1,7 @@
 <?php
 namespace NeuralNetworkLib\Components;
 
+
 /**
  * Neuron class
  *
@@ -8,7 +9,12 @@ namespace NeuralNetworkLib\Components;
 class Neuron {
 
   /**
-   * The neuron's name/id
+   * The neuron's ID
+   */
+  public $ID;
+
+  /**
+   * The neuron's name
    */
   public $name;
 
@@ -62,6 +68,16 @@ class Neuron {
    */
   public $activationFunction;
 
+  /**
+   * The latest output of this neuron
+   */
+  public $latestOutputValue = 0;
+
+  /**
+   * The previous output of this neuron
+   */
+  public $previousOutputValue = 0;
+
 
   // --------------------------------------------------------------------------------------------------------
   /**
@@ -69,6 +85,8 @@ class Neuron {
    *
    */
   public function __construct($network, $layer, $previousLayer, $nextLayer, $name, $yPos = -1, $isBias = FALSE) {
+    static $neuronID      = 0;
+    $this->ID             = $neuronID++;
     $this->network        = $network;
     $this->layer          = $layer;
     $this->previousLayer  = $previousLayer;
@@ -79,7 +97,7 @@ class Neuron {
     $this->isBiasNeuron   = $isBias;
 
     // Set a default activation function
-    $this->activationFunction = '\NeuralNetworkLib\ActivationFunctions\hyperbolicTangent::calculate';
+    $this->activationFunction = '\NeuralNetworkLib\ActivationFunctions\HyperbolicTangent::calculate';
   }
 
 
@@ -104,6 +122,10 @@ class Neuron {
     foreach($this->outputSynapses as $outputSynapse) {
       $outputSynapse->setValue($value);
     }
+
+    // Update the neuron's output data
+    $this->previousOutputValue = $this->latestOutputValue;
+    $this->latestOutputValue = $value;
   }
 
 

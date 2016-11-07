@@ -70,11 +70,13 @@ class FeedForwardNetwork {
    */
   private function buildInputLayer($neuronCount) {
     $network        = $this;
+    $previousLayer  = NULL; // There is no previous layer
+    $nextLayer      = NULL; // We dont know this yet
     $layerName      = 'Input layer';
     $layerPosition  = 1;
-    $layer          = new Components\Layer($network, $layerName, $layerPosition, $neuronCount);
-    $layer->createBiasNeuron();
-    $layer->connectBiasNeuron();
+    $layer          = new Components\Layer($network, $previousLayer, $nextLayer, $layerName, $layerPosition, $neuronCount);
+    //$layer->createBiasNeuron();
+    //$layer->connectBiasNeuron();
     $this->inputLayer = $layer;
   }
 
@@ -91,19 +93,34 @@ class FeedForwardNetwork {
     }
 
     // For each of the layer configurations
+    $firstHiddenLayer = TRUE;
     for($i=0;$i<count($layerStructure);$i++) {
       $layerNeuronCount = $layerStructure[$i];
 
       // Create layer
       $network        = $this;
+      if($firstHiddenLayer) {
+        $previousLayer  = $this->inputLayer;
+      } else {
+        $previousLayer = $this->hiddenLayer[$i-1];
+      }
+      $nextLayer      = NULL; // We dont know this yet
       $layerName      = 'Hidden layer '.$i;
       $layerPosition  = $i+2;
-      $aHiddenLayer   = new Components\Layer($network, $layerName, $layerPosition, $layerNeuronCount);
+      $aHiddenLayer   = new Components\Layer($network, $previousLayer, $nextLayer, $layerName, $layerPosition, $layerNeuronCount);
       $aHiddenLayer->createBiasNeuron();
       $aHiddenLayer->connectBiasNeuron();
 
+      // Update the previous hidden layer's next layer
+      if(!$firstHiddenLayer) {
+        $this->hiddenLayer[$i-1]->nextLayer = $aHiddenLayer;
+      }
+
       // Add new hidden layer to hidden layer list
       $this->hiddenLayer[] = $aHiddenLayer;
+
+      // The next layer is no longer the first hidden layer
+      $firstHiddenLayer = FALSE;
     }
   }
 
@@ -116,12 +133,17 @@ class FeedForwardNetwork {
   private function buildOutputLayer($neuronCount) {
     // Create the output layer
     $network        = $this;
+    $previousLayer  = $this->hiddenLayer[count($this->hiddenLayer)-1]; // The last hidden layer
+    $nextLayer      = NULL; // There is no next layer after the output layer
     $layerName      = 'Output layer';
     $layerPosition  = count($this->hiddenLayer)+2;
-    $outputLayer    = new Components\Layer($network, $layerName, $layerPosition, $neuronCount);
+    $outputLayer    = new Components\Layer($network, $previousLayer, $nextLayer, $layerName, $layerPosition, $neuronCount);
     $outputLayer->createBiasNeuron();
     $outputLayer->connectBiasNeuron();
     $this->outputLayer = $outputLayer;
+
+    // Also update the last hidden layer next layer
+    $this->hiddenLayer[count($this->hiddenLayer)-1]->nextLayer = $outputLayer;
   }
 
 
@@ -262,7 +284,7 @@ class FeedForwardNetwork {
         continue;
       }
       // 1 because of bias neuron is 0 (But what do we do if we have no bias neuron?)
-      $neuron->inputSynapses[1]->setValue($data[$index]);
+      $neuron->inputSynapses[0]->setValue($data[$index]);
     }
   }
 
@@ -274,8 +296,8 @@ class FeedForwardNetwork {
    */
   public function train() {
 
-    // For now we will just do a random weight change algorithm
-    $this->randomWeightChange();
+    $gradientDecentTrainer = new TrainingAlgorithms\GradientDecent($this);
+    //$randomTrainer = new TrainingAlgorithms\Random($this);
 
     // Loop through the training data
       // Set network input data to current training data
@@ -286,75 +308,15 @@ class FeedForwardNetwork {
 
   // --------------------------------------------------------------------------------------------------------
   /**
-   * Performs gradient decent on the network
-   *
-   */
-  public function gradientDescent() {
-
-  }
-
-
-  // --------------------------------------------------------------------------------------------------------
-  /**
-   * Performs gradient decent on the network
-   *
-   */
-  public function randomWeightChange() {
-    $bestOutcomes = [];
-    $bestOutcomesNum = 5;
-
-    for ($i=0; $i < 10000; $i++) {
-
-      $error = 0;
-      foreach($this->trainingData as $trainingData) {
-        $networkInputData = $trainingData[0];
-        $expectedOutput   = $trainingData[1];
-        $networkOutput    = $this->calculate($networkInputData);
-
-        // THIS NEEDS TO BE GENERALIZED: ATM JUST CHECKING ERROR FOR THE FIRST OUTPUT/INPUT
-        //$innerError = abs($expectedOutput[0] - $networkOutput[0]);
-        $innerError = abs($expectedOutput[0] - $networkOutput[0]);
-        $error += $innerError;
-      }
-      $error = $error/count($this->trainingData);
-      //$error = sqrt($error);
-
-      array_push($bestOutcomes, $error);
-      sort($bestOutcomes);
-      if(count($bestOutcomes) > $bestOutcomesNum) {
-        array_pop($bestOutcomes);
-      }
-
-      $rank = array_search($error, $bestOutcomes);
-      if($rank !== FALSE) {
-        // We are one of the nest best! Save us!
-        $this->save('top_'.$bestOutcomesNum.'_net_'.$rank.'.net');
-      }
-
-      //var_dump($bestOutcomes);
-
-      // Randomly change all synapse weights
-      $synapses = $this->allSynapses();
-      foreach($synapses as $synapse) {
-        $synapse->setWeight($this->generateRandomWeight());
-      }
-
-    }
-
-    var_dump($bestOutcomes);
-
-    echo('Setting network to the best one saved.<br>');
-    $this->load('top_'.$bestOutcomesNum.'_net_0.net');
-  }
-
-
-  // --------------------------------------------------------------------------------------------------------
-  /**
    * Generates a random weight
    *
    */
   public function generateRandomWeight() {
-    return rand(0, 1000)/1000;
+    //return mt_rand(-100000000, 100000000)/100000000;
+    //return mt_rand(-10000000000000, 10000000000000)/10000000000000;
+    return floatval(mt_rand() / mt_getrandmax());
+
+    //return rand(-1000, 1000)/1000;
   }
 
 
@@ -398,7 +360,20 @@ class FeedForwardNetwork {
    *
    */
   public function export() {
-    $serializedData = serialize($this);
+    // Store and remove the stuff we dont want exported
+    $trainingData = $this->trainingData;
+    $controlData = $this->controlData;
+    $this->trainingData = [];
+    $this->controlData = [];
+
+    //$serializedData = serialize($this);
+    $serializedData = json_encode(serialize($this));
+
+    // Restore the stuff we removed before export
+    $this->trainingData = $trainingData;
+    $this->controlData = $controlData;
+
+    // Return the serialized data
     return $serializedData;
   }
 
@@ -411,7 +386,9 @@ class FeedForwardNetwork {
   public static function load($filePath) {
     $serializedData = file_get_contents($filePath);
     if($serializedData) {
-      $unserializedNetwork = unserialize($serializedData);
+      //$unserializedNetwork = unserialize($serializedData);
+      $unserializedNetwork = unserialize(json_decode($serializedData));
+
       return $unserializedNetwork;
     } else {
       return FALSE;
@@ -507,7 +484,360 @@ class FeedForwardNetwork {
       ];
     }
 
-    return json_encode($jsonData, 0, 10);
+    return json_encode($jsonData, 0, 100);
+  }
+
+
+// --------------------------------------------------------------------------------------------------------
+/**
+ * Converts a object into an array recursively
+ *
+ */
+public function object2array($object, $recur = 0) {
+  if($recur > 7) {
+    return NULL;
+  }
+  $recur++;
+  $array = [];
+  foreach($object as $key => $value) {
+    if(is_array($value)) {
+      $value = $this->object2array($value, $recur);
+    } elseif(is_object($value)) {
+      $value = $this->object2array($value, $recur);
+    } elseif(is_resource($value)) {
+      $value = NULL;
+    }
+
+    $array[$key] = $value;
+  }
+  return $array;
+}
+
+
+  // --------------------------------------------------------------------------------------------------------
+  /**
+   * Exports the entire network (or everything that is of interest) to json for use at client-side
+   *
+   */
+  public function jsonExport() {
+    $jsonData = [
+      'network' => [
+        'inputLayer' => [],
+        'hiddenLayer' => [],
+        'outputLayer' => []
+      ]
+    ];
+
+    $jsonData = $this->object2array($this);
+
+    return json_encode($jsonData);
+
+
+    // OLD
+
+    // Input layer
+    $jsonData['inputLayer']['ID']           = $this->inputLayer->ID;
+    $jsonData['inputLayer']['name']         = $this->inputLayer->name;
+    $jsonData['inputLayer']['position']     = $this->inputLayer->position;
+    $jsonData['inputLayer']['neuronCount']  = $this->inputLayer->neuronCount;
+    $jsonData['inputLayer']['neurons']      = [];
+    foreach($this->inputLayer->neurons as $neuron) {
+      $jsonNeuron = [];
+      $jsonNeuron['ID']   = $neuron->ID;
+      $jsonNeuron['name'] = $neuron->name;
+      $jsonNeuron['xPos'] = $neuron->xPos;
+      $jsonNeuron['yPos'] = $neuron->yPos;
+      $jsonNeuron['isBiasNeuron']         = $neuron->isBiasNeuron;
+      $jsonNeuron['activationFunction']   = $neuron->activationFunction;
+      $jsonNeuron['latestOutputValue']    = $neuron->latestOutputValue;
+      $jsonNeuron['previousOutputValue']  = $neuron->previousOutputValue;
+      $jsonNeuron['inputSynapses']        = [];
+      $jsonNeuron['outputSynapses']       = [];
+
+      foreach($neuron->inputSynapses as $synapse) {
+        $jsonSynapse = [];
+        $jsonSynapse['ID']    = $synapse->ID;
+        $jsonSynapse['value'] = $synapse->getValue();
+        $jsonSynapse['valueChangeDisabled'] = $synapse->valueChangeDisabled;
+        $jsonSynapse['weight'] = $synapse->getWeight();
+        $jsonSynapse['weightChangeDisabled'] = $synapse->weightChangeDisabled;
+        if($synapse->inputNeuron) {
+          $jsonSynapse['inputNeuron'] = [];
+          $jsonSynapse['inputNeuron']['ID']           = $synapse->inputNeuron->ID;
+          $jsonSynapse['inputNeuron']['name']         = $synapse->inputNeuron->name;
+          $jsonSynapse['inputNeuron']['xPos']         = $synapse->inputNeuron->xPos;
+          $jsonSynapse['inputNeuron']['yPos']         = $synapse->inputNeuron->yPos;
+          $jsonSynapse['inputNeuron']['isBiasNeuron'] = $synapse->inputNeuron->isBiasNeuron;
+          $jsonSynapse['inputNeuron']['activationFunction']   = $synapse->inputNeuron->activationFunction;
+          $jsonSynapse['inputNeuron']['latestOutputValue']    = $synapse->inputNeuron->latestOutputValue;
+          $jsonSynapse['inputNeuron']['previousOutputValue']  = $synapse->inputNeuron->previousOutputValue;
+        } else {
+          $jsonSynapse['inputNeuron'] = NULL;
+        }
+        if($synapse->outputNeuron) {
+          $jsonSynapse['outputNeuron'] = [];
+          $jsonSynapse['outputNeuron']['ID']           = $synapse->outputNeuron->ID;
+          $jsonSynapse['outputNeuron']['name']         = $synapse->outputNeuron->name;
+          $jsonSynapse['outputNeuron']['xPos']         = $synapse->outputNeuron->xPos;
+          $jsonSynapse['outputNeuron']['yPos']         = $synapse->outputNeuron->yPos;
+          $jsonSynapse['outputNeuron']['isBiasNeuron'] = $synapse->outputNeuron->isBiasNeuron;
+          $jsonSynapse['outputNeuron']['activationFunction']   = $synapse->outputNeuron->activationFunction;
+          $jsonSynapse['outputNeuron']['latestOutputValue']    = $synapse->outputNeuron->latestOutputValue;
+          $jsonSynapse['outputNeuron']['previousOutputValue']  = $synapse->outputNeuron->previousOutputValue;
+        } else {
+          $jsonSynapse['outputNeuron'] = NULL;
+        }
+
+        $jsonNeuron['inputSynapses'][] = $jsonSynapse;
+      }
+
+      foreach($neuron->outputSynapses as $synapse) {
+        $jsonSynapse = [];
+        $jsonSynapse['ID']    = $synapse->ID;
+        $jsonSynapse['value'] = $synapse->getValue();
+        $jsonSynapse['valueChangeDisabled'] = $synapse->valueChangeDisabled;
+        $jsonSynapse['weight'] = $synapse->getWeight();
+        $jsonSynapse['weightChangeDisabled'] = $synapse->weightChangeDisabled;
+
+        if($synapse->inputNeuron) {
+          $jsonSynapse['inputNeuron'] = [];
+          $jsonSynapse['inputNeuron']['ID']           = $synapse->inputNeuron->ID;
+          $jsonSynapse['inputNeuron']['name']         = $synapse->inputNeuron->name;
+          $jsonSynapse['inputNeuron']['xPos']         = $synapse->inputNeuron->xPos;
+          $jsonSynapse['inputNeuron']['yPos']         = $synapse->inputNeuron->yPos;
+          $jsonSynapse['inputNeuron']['isBiasNeuron'] = $synapse->inputNeuron->isBiasNeuron;
+          $jsonSynapse['inputNeuron']['activationFunction']   = $synapse->inputNeuron->activationFunction;
+          $jsonSynapse['inputNeuron']['latestOutputValue']    = $synapse->inputNeuron->latestOutputValue;
+          $jsonSynapse['inputNeuron']['previousOutputValue']  = $synapse->inputNeuron->previousOutputValue;
+        } else {
+          $jsonSynapse['inputNeuron'] = NULL;
+        }
+        if($synapse->outputNeuron) {
+          $jsonSynapse['outputNeuron'] = [];
+          $jsonSynapse['outputNeuron']['ID']           = $synapse->outputNeuron->ID;
+          $jsonSynapse['outputNeuron']['name']         = $synapse->outputNeuron->name;
+          $jsonSynapse['outputNeuron']['xPos']         = $synapse->outputNeuron->xPos;
+          $jsonSynapse['outputNeuron']['yPos']         = $synapse->outputNeuron->yPos;
+          $jsonSynapse['outputNeuron']['isBiasNeuron'] = $synapse->outputNeuron->isBiasNeuron;
+          $jsonSynapse['outputNeuron']['activationFunction']   = $synapse->outputNeuron->activationFunction;
+          $jsonSynapse['outputNeuron']['latestOutputValue']    = $synapse->outputNeuron->latestOutputValue;
+          $jsonSynapse['outputNeuron']['previousOutputValue']  = $synapse->outputNeuron->previousOutputValue;
+        } else {
+          $jsonSynapse['outputNeuron'] = NULL;
+        }
+
+        $jsonNeuron['outputSynapses'][] = $jsonSynapse;
+      }
+
+      $jsonData['inputLayer']['neurons'][] = $jsonNeuron;
+    }
+
+
+    // Hidden layer
+    foreach($this->hiddenLayer as $hiddenLayer) {
+      $jsonHiddenLayer = [];
+      $jsonHiddenLayer['ID']          = $hiddenLayer->ID;
+      $jsonHiddenLayer['name']         = $hiddenLayer->name;
+      $jsonHiddenLayer['position']     = $hiddenLayer->position;
+      $jsonHiddenLayer['neuronCount']  = $hiddenLayer->neuronCount;
+      $jsonHiddenLayer['neurons']      = [];
+      foreach($hiddenLayer->neurons as $neuron) {
+        $jsonNeuron = [];
+        $jsonNeuron['ID']   = $neuron->ID;
+        $jsonNeuron['name'] = $neuron->name;
+        $jsonNeuron['xPos'] = $neuron->xPos;
+        $jsonNeuron['yPos'] = $neuron->yPos;
+        $jsonNeuron['isBiasNeuron']         = $neuron->isBiasNeuron;
+        $jsonNeuron['activationFunction']   = $neuron->activationFunction;
+        $jsonNeuron['latestOutputValue']    = $neuron->latestOutputValue;
+        $jsonNeuron['previousOutputValue']  = $neuron->previousOutputValue;
+        $jsonNeuron['inputSynapses']        = [];
+        $jsonNeuron['outputSynapses']       = [];
+
+        foreach($neuron->inputSynapses as $synapse) {
+          $jsonSynapse = [];
+          $jsonSynapse['ID']    = $synapse->ID;
+          $jsonSynapse['value'] = $synapse->getValue();
+          $jsonSynapse['valueChangeDisabled'] = $synapse->valueChangeDisabled;
+          $jsonSynapse['weight'] = $synapse->getWeight();
+          $jsonSynapse['weightChangeDisabled'] = $synapse->weightChangeDisabled;
+
+          if($synapse->inputNeuron) {
+            $jsonSynapse['inputNeuron'] = [];
+            $jsonSynapse['inputNeuron']['ID']           = $synapse->inputNeuron->ID;
+            $jsonSynapse['inputNeuron']['name']         = $synapse->inputNeuron->name;
+            $jsonSynapse['inputNeuron']['xPos']         = $synapse->inputNeuron->xPos;
+            $jsonSynapse['inputNeuron']['yPos']         = $synapse->inputNeuron->yPos;
+            $jsonSynapse['inputNeuron']['isBiasNeuron'] = $synapse->inputNeuron->isBiasNeuron;
+            $jsonSynapse['inputNeuron']['activationFunction']   = $synapse->inputNeuron->activationFunction;
+            $jsonSynapse['inputNeuron']['latestOutputValue']    = $synapse->inputNeuron->latestOutputValue;
+            $jsonSynapse['inputNeuron']['previousOutputValue']  = $synapse->inputNeuron->previousOutputValue;
+          } else {
+            $jsonSynapse['inputNeuron'] = NULL;
+          }
+          if($synapse->outputNeuron) {
+            $jsonSynapse['outputNeuron'] = [];
+            $jsonSynapse['outputNeuron']['ID']           = $synapse->outputNeuron->ID;
+            $jsonSynapse['outputNeuron']['name']         = $synapse->outputNeuron->name;
+            $jsonSynapse['outputNeuron']['xPos']         = $synapse->outputNeuron->xPos;
+            $jsonSynapse['outputNeuron']['yPos']         = $synapse->outputNeuron->yPos;
+            $jsonSynapse['outputNeuron']['isBiasNeuron'] = $synapse->outputNeuron->isBiasNeuron;
+            $jsonSynapse['outputNeuron']['activationFunction']   = $synapse->outputNeuron->activationFunction;
+            $jsonSynapse['outputNeuron']['latestOutputValue']    = $synapse->outputNeuron->latestOutputValue;
+            $jsonSynapse['outputNeuron']['previousOutputValue']  = $synapse->outputNeuron->previousOutputValue;
+          } else {
+            $jsonSynapse['outputNeuron'] = NULL;
+          }
+
+          $jsonNeuron['inputSynapses'][] = $jsonSynapse;
+        }
+
+        foreach($neuron->outputSynapses as $synapse) {
+          $jsonSynapse = [];
+          $jsonSynapse['ID']    = $synapse->ID;
+          $jsonSynapse['value'] = $synapse->getValue();
+          $jsonSynapse['valueChangeDisabled'] = $synapse->valueChangeDisabled;
+          $jsonSynapse['weight'] = $synapse->getWeight();
+          $jsonSynapse['weightChangeDisabled'] = $synapse->weightChangeDisabled;
+
+          if($synapse->inputNeuron) {
+            $jsonSynapse['inputNeuron'] = [];
+            $jsonSynapse['inputNeuron']['ID']           = $synapse->inputNeuron->ID;
+            $jsonSynapse['inputNeuron']['name']         = $synapse->inputNeuron->name;
+            $jsonSynapse['inputNeuron']['xPos']         = $synapse->inputNeuron->xPos;
+            $jsonSynapse['inputNeuron']['yPos']         = $synapse->inputNeuron->yPos;
+            $jsonSynapse['inputNeuron']['isBiasNeuron'] = $synapse->inputNeuron->isBiasNeuron;
+            $jsonSynapse['inputNeuron']['activationFunction']   = $synapse->inputNeuron->activationFunction;
+            $jsonSynapse['inputNeuron']['latestOutputValue']    = $synapse->inputNeuron->latestOutputValue;
+            $jsonSynapse['inputNeuron']['previousOutputValue']  = $synapse->inputNeuron->previousOutputValue;
+          } else {
+            $jsonSynapse['inputNeuron'] = NULL;
+          }
+          if($synapse->outputNeuron) {
+            $jsonSynapse['outputNeuron'] = [];
+            $jsonSynapse['outputNeuron']['ID']           = $synapse->outputNeuron->ID;
+            $jsonSynapse['outputNeuron']['name']         = $synapse->outputNeuron->name;
+            $jsonSynapse['outputNeuron']['xPos']         = $synapse->outputNeuron->xPos;
+            $jsonSynapse['outputNeuron']['yPos']         = $synapse->outputNeuron->yPos;
+            $jsonSynapse['outputNeuron']['isBiasNeuron'] = $synapse->outputNeuron->isBiasNeuron;
+            $jsonSynapse['outputNeuron']['activationFunction']   = $synapse->outputNeuron->activationFunction;
+            $jsonSynapse['outputNeuron']['latestOutputValue']    = $synapse->outputNeuron->latestOutputValue;
+            $jsonSynapse['outputNeuron']['previousOutputValue']  = $synapse->outputNeuron->previousOutputValue;
+          } else {
+            $jsonSynapse['outputNeuron'] = NULL;
+          }
+
+          $jsonNeuron['outputSynapses'][] = $jsonSynapse;
+        }
+
+        $jsonHiddenLayer['neurons'][] = $jsonNeuron;
+      }
+
+      $jsonData['hiddenLayer'][] = $jsonHiddenLayer;
+    }
+
+
+    // Output layer
+    $jsonData['outputLayer']['ID']          = $this->outputLayer->ID;
+    $jsonData['outputLayer']['name']         = $this->outputLayer->name;
+    $jsonData['outputLayer']['position']     = $this->outputLayer->position;
+    $jsonData['outputLayer']['neuronCount']  = $this->outputLayer->neuronCount;
+    $jsonData['outputLayer']['neurons']      = [];
+    foreach($this->outputLayer->neurons as $neuron) {
+      $jsonNeuron = [];
+      $jsonNeuron['ID']   = $neuron->ID;
+      $jsonNeuron['name'] = $neuron->name;
+      $jsonNeuron['xPos'] = $neuron->xPos;
+      $jsonNeuron['yPos'] = $neuron->yPos;
+      $jsonNeuron['isBiasNeuron']         = $neuron->isBiasNeuron;
+      $jsonNeuron['activationFunction']   = $neuron->activationFunction;
+      $jsonNeuron['latestOutputValue']    = $neuron->latestOutputValue;
+      $jsonNeuron['previousOutputValue']  = $neuron->previousOutputValue;
+      $jsonNeuron['inputSynapses']        = [];
+      $jsonNeuron['outputSynapses']       = [];
+
+      foreach($neuron->inputSynapses as $synapse) {
+        $jsonSynapse = [];
+        $jsonSynapse['ID']    = $synapse->ID;
+        $jsonSynapse['value'] = $synapse->getValue();
+        $jsonSynapse['valueChangeDisabled'] = $synapse->valueChangeDisabled;
+        $jsonSynapse['weight'] = $synapse->getWeight();
+        $jsonSynapse['weightChangeDisabled'] = $synapse->weightChangeDisabled;
+
+        if($synapse->inputNeuron) {
+          $jsonSynapse['inputNeuron'] = [];
+          $jsonSynapse['inputNeuron']['ID']           = $synapse->inputNeuron->ID;
+          $jsonSynapse['inputNeuron']['name']         = $synapse->inputNeuron->name;
+          $jsonSynapse['inputNeuron']['xPos']         = $synapse->inputNeuron->xPos;
+          $jsonSynapse['inputNeuron']['yPos']         = $synapse->inputNeuron->yPos;
+          $jsonSynapse['inputNeuron']['isBiasNeuron'] = $synapse->inputNeuron->isBiasNeuron;
+          $jsonSynapse['inputNeuron']['activationFunction']   = $synapse->inputNeuron->activationFunction;
+          $jsonSynapse['inputNeuron']['latestOutputValue']    = $synapse->inputNeuron->latestOutputValue;
+          $jsonSynapse['inputNeuron']['previousOutputValue']  = $synapse->inputNeuron->previousOutputValue;
+        } else {
+          $jsonSynapse['inputNeuron'] = NULL;
+        }
+        if($synapse->outputNeuron) {
+          $jsonSynapse['outputNeuron'] = [];
+          $jsonSynapse['outputNeuron']['ID']           = $synapse->outputNeuron->ID;
+          $jsonSynapse['outputNeuron']['name']         = $synapse->outputNeuron->name;
+          $jsonSynapse['outputNeuron']['xPos']         = $synapse->outputNeuron->xPos;
+          $jsonSynapse['outputNeuron']['yPos']         = $synapse->outputNeuron->yPos;
+          $jsonSynapse['outputNeuron']['isBiasNeuron'] = $synapse->outputNeuron->isBiasNeuron;
+          $jsonSynapse['outputNeuron']['activationFunction']   = $synapse->outputNeuron->activationFunction;
+          $jsonSynapse['outputNeuron']['latestOutputValue']    = $synapse->outputNeuron->latestOutputValue;
+          $jsonSynapse['outputNeuron']['previousOutputValue']  = $synapse->outputNeuron->previousOutputValue;
+        } else {
+          $jsonSynapse['outputNeuron'] = NULL;
+        }
+
+        $jsonNeuron['inputSynapses'][] = $jsonSynapse;
+      }
+
+      foreach($neuron->outputSynapses as $synapse) {
+        $jsonSynapse = [];
+        $jsonSynapse['ID']    = $synapse->ID;
+        $jsonSynapse['value'] = $synapse->getValue();
+        $jsonSynapse['valueChangeDisabled'] = $synapse->valueChangeDisabled;
+        $jsonSynapse['weight'] = $synapse->getWeight();
+        $jsonSynapse['weightChangeDisabled'] = $synapse->weightChangeDisabled;
+
+        if($synapse->inputNeuron) {
+          $jsonSynapse['inputNeuron'] = [];
+          $jsonSynapse['inputNeuron']['ID']           = $synapse->inputNeuron->ID;
+          $jsonSynapse['inputNeuron']['name']         = $synapse->inputNeuron->name;
+          $jsonSynapse['inputNeuron']['xPos']         = $synapse->inputNeuron->xPos;
+          $jsonSynapse['inputNeuron']['yPos']         = $synapse->inputNeuron->yPos;
+          $jsonSynapse['inputNeuron']['isBiasNeuron'] = $synapse->inputNeuron->isBiasNeuron;
+          $jsonSynapse['inputNeuron']['activationFunction']   = $synapse->inputNeuron->activationFunction;
+          $jsonSynapse['inputNeuron']['latestOutputValue']    = $synapse->inputNeuron->latestOutputValue;
+          $jsonSynapse['inputNeuron']['previousOutputValue']  = $synapse->inputNeuron->previousOutputValue;
+        } else {
+          $jsonSynapse['inputNeuron'] = NULL;
+        }
+        if($synapse->outputNeuron) {
+          $jsonSynapse['outputNeuron'] = [];
+          $jsonSynapse['outputNeuron']['ID']           = $synapse->outputNeuron->ID;
+          $jsonSynapse['outputNeuron']['name']         = $synapse->outputNeuron->name;
+          $jsonSynapse['outputNeuron']['xPos']         = $synapse->outputNeuron->xPos;
+          $jsonSynapse['outputNeuron']['yPos']         = $synapse->outputNeuron->yPos;
+          $jsonSynapse['outputNeuron']['isBiasNeuron'] = $synapse->outputNeuron->isBiasNeuron;
+          $jsonSynapse['outputNeuron']['activationFunction']   = $synapse->outputNeuron->activationFunction;
+          $jsonSynapse['outputNeuron']['latestOutputValue']    = $synapse->outputNeuron->latestOutputValue;
+          $jsonSynapse['outputNeuron']['previousOutputValue']  = $synapse->outputNeuron->previousOutputValue;
+        } else {
+          $jsonSynapse['outputNeuron'] = NULL;
+        }
+
+        $jsonNeuron['outputSynapses'][] = $jsonSynapse;
+      }
+
+      $jsonData['outputLayer']['neurons'][] = $jsonNeuron;
+    }
+
+
+
+    return json_encode($jsonData);
   }
 
 }

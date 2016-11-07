@@ -21,11 +21,21 @@ TODO / Review
 - Make all objects avalible through centralized stores?
 
 
-- Make next layer and previous layer links in neuron and layer class?
+- Learning rate
+  - We should have a global setLearningRate() that sets a learning rate for all neurons AND create a setLearningRate for each neuron to do custom learning rates for each neuron
 
+- Momentum
+  - Currently not implemented
 
 - Save functions should be filtered a bit. Meaning, we don't need to save training and control data etc.
 
+- Making a nicer set of API functions for generating a totally custom network: That is, you do not send the structure of the network to the contrusctor but you do things like addLayer(), addNeuron(), addSynapse and so on. These functions should be the ones used by the more automated construct API too.
+
+- Create some sort of mapping/query function so you can get exactly what synapse goes between two neurons
+
+- A way to "record" everything the network does and replay it in the browser. Some sort of snapshot function. Maybe we can just use the save/load/export functions and add a bit of meta data to it? Sequence number, ID or timestamp.
+
+- Could we maybe do this all in database format? Sqlite or mysql with memory tables? Only requirement is that the performance has to be acceptable.
 
 ---------------------------------------------------------------------
 Random notes
@@ -61,8 +71,7 @@ Cost function?
 Cross-entropy
 
 
-Learning rate
-Momentum
+
 
 
 Network architecture types

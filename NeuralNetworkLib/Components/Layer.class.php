@@ -8,6 +8,11 @@ namespace NeuralNetworkLib\Components;
 class Layer {
 
   /**
+   * Layer ID
+   */
+  public $ID;
+
+  /**
    * Layer name
    */
   public $name = 'Layer';
@@ -28,15 +33,11 @@ class Layer {
   public $neuronCount = 0;
 
   /**
-   * TODO
-   *
    * The "previous" layer in the network
    */
   public $previousLayer = NULL;
 
   /**
-   * TODO
-   *
    * The "next" layer in the network
    */
   public $nextLayer = NULL;
@@ -52,11 +53,15 @@ class Layer {
    * Layer connstruct
    *
    */
-  public function __construct($network, $name, $position, $neuronCount) {
-    $this->network = $network;
-    $this->name = $name;
-    $this->position = $position;
-    $this->neuronCount = $neuronCount;
+  public function __construct($network, $previousLayer, $nextLayer, $name, $position, $neuronCount) {
+    static $layerID       = 0;
+    $this->ID             = $layerID++;
+    $this->network        = $network;
+    $this->previousLayer  = $previousLayer;
+    $this->nextLayer      = $nextLayer;
+    $this->name           = $name;
+    $this->position       = $position;
+    $this->neuronCount    = $neuronCount;
 
     $this->createNeurons();
   }

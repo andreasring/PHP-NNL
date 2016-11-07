@@ -8,6 +8,11 @@ namespace NeuralNetworkLib\Components;
 class Synapse {
 
   /**
+   * The synapse's ID
+   */
+  public $ID;
+
+  /**
    *
    */
   public $inputNeuron = NULL;
@@ -15,27 +20,27 @@ class Synapse {
   /**
    *
    */
-  public $outputNeuron;
+  public $outputNeuron = NULL;
 
   /**
    *
    */
-  private $value;
+  public $value;
 
   /**
    *
    */
-  private $valueChangeDisabled = FALSE;
+  public $valueChangeDisabled = FALSE;
 
   /**
    *
    */
-  private $weight;
+  public $weight;
 
   /**
    *
    */
-  private $weightChangeDisabled = FALSE;
+  public $weightChangeDisabled = FALSE;
 
 
   // --------------------------------------------------------------------------------------------------------
@@ -44,6 +49,8 @@ class Synapse {
    *
    */
   public function __construct($inputNeuron = NULL, $outputNeuron = NULL, $value = 0.0, $weight = 0.0) {
+    static $synapseID       = 0;
+    $this->ID             = $synapseID++;
     $this->inputNeuron    = $inputNeuron;
     $this->outputNeuron   = $outputNeuron;
     $this->value          = $value;
