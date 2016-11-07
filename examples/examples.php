@@ -76,7 +76,7 @@
           <hr>
 
           <p>This will show you how to include the library correctly and create a simple feedforward network.</p>
-          <p class="text-right"><a class="btn btn-primary btn-md" href="01-create-feedforward-network/">View example!</a></p>
+          <p class="text-right"><a class="btn btn-primary btn-md" href="create-simple-feedforward-network/">View example!</a></p>
         </div>
       </div>
 

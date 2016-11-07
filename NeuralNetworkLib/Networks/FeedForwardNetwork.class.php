@@ -38,7 +38,7 @@ class FeedForwardNetwork {
   public $controlData = [];
 
   /**
-   * Central store
+   * Central store ???? Maybe TODO
    *  - Layers
    *  - Neurons
    *  - Synapses

@@ -1,39 +1,37 @@
 <?php
+/**
+ * Autoloader for PHP Neural Network Library
+ *
+ * https://github.com/andreasring/PHP-NNL
+ *
+ */
+spl_autoload_register(function ($class) {
 
-  // Register autoloader function
-  spl_autoload_register('autoloader');
+  // Project-specific namespace prefix
+  $prefix = 'NeuralNetworkLib\\';
 
-  /**
-   * Autoloader function
-   *
-   */
-  function autoloader($className) {
-  	// Generate the file paths for all possible folders
-    $baseDir = str_replace('autoloader.php', '', __FILE__);
-  	$possibleInclusionPaths = array(
-  		$baseDir.$className.'.class.php'
-  	);
+  // Base directory for the namespace prefix
+  $base_dir = __DIR__ . '/NeuralNetworkLib/';
 
-  	// Make sure we only have one class file found
-  	$numInclusionFilesFound = 0;
-  	$inclusionPath = '';
-  	foreach($possibleInclusionPaths as $possibleInclusionPath) {
-  		if(file_exists($possibleInclusionPath)) {
-  			$numInclusionFilesFound++;
-  			$inclusionPath = $possibleInclusionPath;
-  		}
-  		if($numInclusionFilesFound > 1) {
-  			throw new Exception('Multiple inclusion paths found. Dont know which to load.');
-
-  		}
-  	}
-  	if($numInclusionFilesFound != 1) {
-  		throw new Exception('No class, model or exception file found ('.$className.').');
-  	}
-
-  	// Include the class
-  	require_once($inclusionPath);
+  // Does the class use the namespace prefix?
+  $len = strlen($prefix);
+  if(strncmp($prefix, $class, $len) !== 0) {
+      // No, move to the next registered autoloader
+      return;
   }
 
+  // Get the relative class name
+  $relative_class = substr($class, $len);
+
+  // Replace the namespace prefix with the base directory, replace namespace
+  // separators with directory separators in the relative class name, append
+  // with .php
+  $file = $base_dir . str_replace('\\', '/', $relative_class) . '.class.php';
+
+  // If the file exists, require it
+  if(file_exists($file)) {
+      require($file);
+  }
+});
 
 ?>
