@@ -1,23 +1,25 @@
 <?php
 namespace NeuralNetworkLib\TrainingAlgorithms;
 
+use \NeuralNetworkLib\Helpers as Helpers;
+
+// --------------------------------------------------------------------------------------------------------------------------
 /**
  * Training algorithm class: Random
  *
  * Simply changes the weights randomly and keeps the top x configurations
  *
  */
-class Random {
+class Random extends TrainingAlgorithmBase {
 
   /**
-   * The netwotk to train
+   * Defines default configuration for this algorithm
    */
-  private $network;
-
-  /**
-   * Training config
-   */
-  private $config;
+  protected $configuration = [
+    'outputDir' => '/',
+    'bestOutcomesNum' => 5,
+    'trainingRounds' => 1000
+  ];
 
   /**
    * Best outcomes of the training
@@ -27,45 +29,14 @@ class Random {
 
   // --------------------------------------------------------------------------------------------------------
   /**
-   * Attempt to train the network
-   *
-   */
-  public function __construct($network, $config = []) {
-    $this->network = $network;
-    $this->config = $this->readConfig($config);
-
-    $this->run();
-  }
-
-
-  // --------------------------------------------------------------------------------------------------------
-  /**
-   * Set default configurations and override with those who are passed in
-   *
-   */
-  private function readConfig($overrideConfig) {
-    $config = [
-      'outputDir' => '/',
-      'bestOutcomesNum' => 5,
-      'trainingRounds' => 1000
-    ];
-
-    array_merge($config, $overrideConfig);
-
-    return $config;
-  }
-
-
-  // --------------------------------------------------------------------------------------------------------
-  /**
    * Run the training algorithm
    *
    */
-  private function run() {
+  private function train() {
     $bestOutcomes     = [];
-    $outputDir        = $this->config['outputDir'];
-    $bestOutcomesNum  = $this->config['bestOutcomesNum'];
-    $trainingRounds   = $this->config['trainingRounds'];
+    $outputDir        = $this->configuration['outputDir'];
+    $bestOutcomesNum  = $this->configuration['bestOutcomesNum'];
+    $trainingRounds   = $this->configuration['trainingRounds'];
 
     $network          = $this->network;
     $trainingDatas    = $network->trainingData;
@@ -81,8 +52,8 @@ class Random {
         $innerError = 0.0;
         foreach($networkOutputs as $index => $networkOutput) {
           $expectedOutput = $expectedOutputs[$index];
-          //$innerError += exp($expectedOutput - $networkOutput);
-          $innerError += exp($expectedOutput - $networkOutput);
+          //$innerError += pow($expectedOutput - $networkOutput, 2);
+          $innerError += pow($expectedOutput - $networkOutput, 2);
         }
         $innerError = $innerError / count($networkOutputs);
         //$innerError = sqrt($innerError);
@@ -107,7 +78,7 @@ class Random {
       // Randomly change all synapse weights
       $synapses = $network->allSynapses();
       foreach($synapses as $synapse) {
-        $synapse->setWeight($network->generateRandomWeight());
+        $synapse->setWeight(Helpers\Misc::generateRandomWeight());
       }
 
     }

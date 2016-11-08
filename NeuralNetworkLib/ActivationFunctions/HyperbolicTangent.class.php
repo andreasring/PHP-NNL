@@ -24,9 +24,6 @@ class HyperbolicTangent {
   /**
    * Hyperbolic tangent activation function derivative
    *
-   * The derivative of the hyperbolic tangent.
-   * Used in gradient decent training algorithm.
-   *
    */
   public static function derivative($x) {
     return 1.0 - pow($x, 2);

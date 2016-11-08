@@ -3,11 +3,12 @@ namespace NeuralNetworkLib\TrainingAlgorithms;
 
 // --------------------------------------------------------------------------------------------------------------------------
 /**
- * Training algorithm class: Genetic
+ * Training algorithm class: Particle swarm
+ *
  *
  *
  */
-class Genetic extends TrainingAlgorithmBase {
+class ParticleSwarm extends TrainingAlgorithmBase {
 
   /**
    * Defines default configuration for this algorithm

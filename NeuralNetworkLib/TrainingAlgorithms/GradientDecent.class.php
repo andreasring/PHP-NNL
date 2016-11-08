@@ -1,57 +1,20 @@
 <?php
 namespace NeuralNetworkLib\TrainingAlgorithms;
 
+// --------------------------------------------------------------------------------------------------------------------------
 /**
  * Training algorithm class: Gradient Decent
  *
  */
-class GradientDecent {
+class GradientDecent extends TrainingAlgorithmBase {
 
   /**
-   * The netwotk to train
+   * Defines default configuration for this algorithm
    */
-  private $network;
-
-  /**
-   * Training config
-   */
-  private $config;
-
-  /**
-   * Best outcomes of the training
-   */
-  public $bestOutcomes;
-
-
-  // --------------------------------------------------------------------------------------------------------
-  /**
-   * Attempt to train the network
-   *
-   */
-  public function __construct($network, $config = []) {
-    $this->network = $network;
-    $this->config = $this->readConfig($config);
-
-    $this->run();
-  }
-
-
-  // --------------------------------------------------------------------------------------------------------
-  /**
-   * Set default configurations and override with those who are passed in
-   *
-   */
-  private function readConfig($overrideConfig) {
-    $config = [
-      'trainingRounds' => 1000,
-      'bestOutcomesNum' => 5,
-      'learningRate' => 0.1
-    ];
-
-    array_merge($config, $overrideConfig);
-
-    return $config;
-  }
+  protected $configuration = [
+    'trainingRounds' => 1000,
+    'learningRate' => 0.1
+  ];
 
 
   // --------------------------------------------------------------------------------------------------------
@@ -59,14 +22,11 @@ class GradientDecent {
    * Run the training algorithm
    *
    */
-  private function run() {
-    $bestOutcomes     = [];
-    $bestOutcomesNum  = $this->config['bestOutcomesNum'];
-    $trainingRounds   = $this->config['trainingRounds'];
-    $learningRate     = $this->config['learningRate'];
-
+  public function train() {
+    $trainingRounds   = $this->configuration['trainingRounds'];
+    $learningRate     = $this->configuration['learningRate'];
     $network          = $this->network;
-    $trainingDatas    = $network->trainingData;
+    $trainingDatas    = $this->trainingData;
 
     $error = 0.0;
     $previousError = 0.0;
@@ -83,11 +43,11 @@ class GradientDecent {
         $innerError = 0.0;
         foreach($networkOutputs as $index => $networkOutput) {
           $expectedOutput = $expectedOutputs[$index];
-          //$innerError += exp($expectedOutput - $networkOutput);
-          $innerError += ($expectedOutput - $networkOutput);
+          $innerError += pow($expectedOutput - $networkOutput, 2);
+          //$innerError += ($expectedOutput - $networkOutput);
         }
         $innerError = $innerError / count($networkOutputs);
-        //$innerError = sqrt($innerError);
+        $innerError = sqrt($innerError);
 
         $error += $innerError;
         //var_dump($innerError);
@@ -97,7 +57,7 @@ class GradientDecent {
         // First calculate error gradients for the output layer
         foreach($network->outputLayer->neurons as $outputNeuronIndex => $outputNeuron) {
           // Skip bias neuron
-          if($outputNeuron->isBiasNeuron) {
+          if(isset($outputNeuron->isBiasNeuron)) {
             continue;
           }
 
@@ -116,7 +76,7 @@ class GradientDecent {
 
         // Now we calculate the error gradients for all the neurons in the hidden layers
         // One layer at a time, starting with the last one
-        $hiddenLayer = $network->hiddenLayer[count($network->hiddenLayer)-1];
+        $hiddenLayer = $network->hiddenLayers[count($network->hiddenLayers)-1];
         while($hiddenLayer->previousLayer != NULL) {
 
           // Each neuron in the hidden layer
@@ -178,11 +138,11 @@ class GradientDecent {
       $error = $error / count($trainingDatas);
       var_dump($error);
 
-      $network->save('top_gradient_net.net');
+      //$network->save('top_gradient_net.net');
     }
 
-    echo('Setting network to the best one saved.<br>');
-    $network->load('top_gradient_net.net');
+    //echo('Setting network to the best one saved.<br>');
+    //$network->load('top_gradient_net.net');
   }
 
 }

@@ -21,4 +21,14 @@ class Sigmoid {
     // return 1 / (1 + pow(M_E, -$x));
   }
 
+
+  // --------------------------------------------------------------------------------------------------------
+  /**
+   * Sigmoid activation function derivative
+   *
+   */
+  public static function derivative($x) {
+    return self::calculate($x) * (1 - self::calculate($x));
+  }
+
 }

@@ -6,15 +6,14 @@
   // Create a simple network
   $network = new NeuralNetworkLib\Networks\FeedForwardNetwork(2, [3], 1);
 
-  $network->addTrainingData([1, 1], [1]);
-  $network->addTrainingData([0, 0], [1]);
-  $network->addTrainingData([1, 0], [0]);
-  $network->addTrainingData([0, 1], [0]);
+  $gradientDecentTrainer = new NeuralNetworkLib\TrainingAlgorithms\GradientDecent($network);
 
-  $network->train();
+  $gradientDecentTrainer->addTrainingData([1, 1], [1]);
+  $gradientDecentTrainer->addTrainingData([0, 0], [1]);
+  $gradientDecentTrainer->addTrainingData([1, 0], [0]);
+  $gradientDecentTrainer->addTrainingData([0, 1], [0]);
 
-  // Do a calculation with it to push data throughout the network so we get something interesting to look at
-  $network->calculate([1, 1]);
+  $gradientDecentTrainer->train();
 
   /************************************************************************************************************************/
 
@@ -467,7 +466,7 @@
           },
           mounted: function() {
             // Overview
-            this.totalNumLayers             = this.network.hiddenLayer.length + 2;
+            this.totalNumLayers             = this.network.hiddenLayers.length + 2;
             this.totalNumNeurons            = allNeurons(this.network).length;
             this.totalNumBiasNeurons        = allBiasNeurons(this.network).length;
             this.totalNumSynapses           = allSynapses(this.network).length;
@@ -489,7 +488,7 @@
 
             // Hidden layer
             var hiddenLayers = [];
-            this.network.hiddenLayer.forEach(function (hiddenLayer) {
+            this.network.hiddenLayers.forEach(function (hiddenLayer) {
               var aHiddenLayer = {};
 
               aHiddenLayer.ID         = hiddenLayer.ID;
@@ -708,57 +707,13 @@
 
       // Returns all the neurons in a network
       function allNeurons(network) {
-        var neurons = [];
-        network.inputLayer.neurons.forEach(function (neuron) {
-          neurons.push(neuron);
-        });
-        network.hiddenLayer.forEach(function (hiddenLayer) {
-          hiddenLayer.neurons.forEach(function (neuron) {
-            neurons.push(neuron);
-          });
-        });
-        network.outputLayer.neurons.forEach(function (neuron) {
-          neurons.push(neuron);
-        });
-        return neurons;
+        return network.allNeurons;
       }
 
 
       // Returns all the synapses in a network
       function allSynapses(network) {
-        var neurons = allNeurons(network);
-        var synapses = [];
-        neurons.forEach(function (neuron) {
-          neuron.inputSynapses.forEach(function (synapse) {
-            var found = false;
-            synapses.forEach(function (innerSynapse) {
-              if(innerSynapse.ID == synapse.ID) {
-                found = true;
-              }
-            });
-            if(!found) {
-              // Only add the ones that are fully connected
-              if(synapse.inputNeuron != null && synapse.outputNeuron != null) {
-                synapses.push(synapse);
-              }
-            }
-          });
-          neuron.outputSynapses.forEach(function (synapse) {
-            var found = false;
-            synapses.forEach(function (innerSynapse) {
-              if(innerSynapse.ID == synapse.ID) {
-                found = true;
-              }
-            });
-            if(!found) {
-              // Only add the ones that are fully connected
-              if(synapse.inputNeuron != null && synapse.outputNeuron != null) {
-                synapses.push(synapse);
-              }
-            }
-          });
-        });
-        return synapses;
+        return network.allSynapses;
       }
 
 

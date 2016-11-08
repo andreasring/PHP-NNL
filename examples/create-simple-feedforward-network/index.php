@@ -86,12 +86,12 @@
           <script src="https://gist.github.com/andreasring/c1f04445804ff5c7282d92117ade9616.js"></script>
 
           <br>
-          
+
           <h3>Network graph</h3>
           <hr>
 
           <p>The network we just created looks like this:</p>
-          <img src="">
+          <img src="https://github.com/andreasring/PHP-NNL/blob/master/examples/gfx/simpleFeedforwardNetwork.png?raw=true">
         </div>
       </div>
 
@@ -101,7 +101,7 @@
           <h2>Complete code</h1>
           <hr>
 
-
+          <script src="https://gist.github.com/andreasring/28c0b600241293a67a3afbb231b63bba.js"></script>
         </div>
       </div>
 

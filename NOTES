@@ -1,16 +1,24 @@
 ---------------------------------------------------------------------
 TODO / Review
 ---------------------------------------------------------------------
+- Create a base class for networks
+- Create a base class for training algorithms?
+- Create a base class for Activation functions?
+- Create a base class for the various components?
+
 - Bias neuron
   - Currently there is one bias neuron for each and every layer. But do we need this? Should be sufficient to just have one bias neuron, for example in the input layer and connect that to all the other neurons in the network?
 
+- Genetic algoritm
+
+- Particle swarm optimization/training algorithm (https://www.youtube.com/watch?v=sB1n9a9yxJk)
 
 - Activation function
-  - Possible other functions to implement
-    - Gaussian
+  - Possible other functions to implemen
     - Linear
-    - Step (binary)
 
+
+- Create a standardised way to create layers, neurons, synapses and weights so that they get automatic ID's and are stored in sentralized places
 
 - Normalization
   - Create normalization helper functions
@@ -27,7 +35,10 @@ TODO / Review
 - Momentum
   - Currently not implemented
 
-- Save functions should be filtered a bit. Meaning, we don't need to save training and control data etc.
+- Save and load function needs to be changed so we can load and save in-memory.
+  - Adding export and import functions that takes raw data
+  - Add functions loadFromFile and saveToFile perhaps?
+    - Or exportToFile and importFromFile?
 
 - Making a nicer set of API functions for generating a totally custom network: That is, you do not send the structure of the network to the contrusctor but you do things like addLayer(), addNeuron(), addSynapse and so on. These functions should be the ones used by the more automated construct API too.
 
@@ -37,19 +48,24 @@ TODO / Review
 
 - Could we maybe do this all in database format? Sqlite or mysql with memory tables? Only requirement is that the performance has to be acceptable.
 
+- Create a loss function namespace?
+  - Should be easy enough to just supply the functions with expected output and actual output and then do whatever they want with that
+
+
 ---------------------------------------------------------------------
 Random notes
 ---------------------------------------------------------------------
-Training algo / Backpropagation algo
-  - Gradient decent
-  - Genetic
 
 Full-batch training vs Mini-batch training vs Online training
+  - Stochastic = online
 
-Autoencoder
+Autoencoders
+  - Denoising autoencoder
+  - Sparse autoencoder
+  - Variational autoencoder (VAE)
+  - Contractive autoencoder
 
-
-Treshold function in neuron before activation function!?
+Threshold function in neuron before activation function!?
 
 Overfitting
   - Dropout
@@ -59,7 +75,8 @@ Overfitting
   - Model averaging
   - Bayesian fitting of neural nets
   - Generative pre-training
-
+  - Gradient noise
+  - Other types of noise
 
 Error calculation
   - Mean squared error (MSE)
@@ -67,12 +84,24 @@ Error calculation
   - Arctan
 
 Cost function?
-  - Softmax
+
+Softmax
+
+Maxout
+
 Cross-entropy
 
+Outlier removal
 
+Stochastic gradient descent (https://en.wikipedia.org/wiki/Stochastic_gradient_descent)
 
-
+Gradient decent additions
+  - Momentum
+  - Nesterov accelerated gradient
+  - Adagrad
+  - Adadelta
+  - RMSprop
+  - Adam
 
 Network architecture types
   - Feed farward network
@@ -80,14 +109,27 @@ Network architecture types
   - Symetrically connected network
 
 Unlabeled/unsupervised/feature extraction/pattern recognition
+  - boltzman machine
   - Restricted boltzman machine
   - Autoencoders
 
 Labeled/supervised/classifier
-  - Reccurent network
+  - Recurrent network
   - Recursive neural tenser network
   - Convolutional network
-  - Deep belif network
+  - Deep belief network
 
+
+differential evolution
+
+Steepest gradient Decent
+Conjugate gradient decent
 
 Reinforcement learning?
+
+More activation functions
+  - Ramp
+  - Edit step (and sign?) to have a threshold/offset parameter?
+
+
+Vectorization of layers?, neurons?, synapses?, weights and values

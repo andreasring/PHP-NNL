@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>04 Visualize Network Interactive</title>
+    <title>PHP Neural Network Library Examples</title>
 
     <!-- jQuery 3.1.1 -->
     <script src="https://code.jquery.com/jquery-3.1.1.js" integrity="sha256-16cdPddA6VdVInumRGo6IbivbERE8p7CQR3HzTBuELA=" crossorigin="anonymous"></script>
@@ -68,7 +68,8 @@
         </div>
       </div>
 
-      <br>
+      <br><br>
+
 
       <div class="row">
         <div class="col-lg-12">
@@ -80,13 +81,179 @@
         </div>
       </div>
 
+      <br>
+
       <div class="row">
         <div class="col-lg-12">
           <h2>Creating a simple recurrent network</h2>
           <hr>
 
+          <div class="alert alert-danger" role="alert">This example is not completed yet!</div>
+
           <p>This will show you how to include the library correctly and create a simple recurrent network.</p>
-          <p class="text-right"><a class="btn btn-primary btn-md" href="01-create-feedforward-network/">View example!</a></p>
+          <p class="text-right"><a class="btn btn-primary btn-md" href="examplePath">View example!</a></p>
+        </div>
+      </div>
+
+      <br>
+
+      <div class="row">
+        <div class="col-lg-12">
+          <h2>Calculate a network output</h2>
+          <hr>
+
+          <p>This will show you how to actually "run" the network to get an output from an input.</p>
+          <p class="text-right"><a class="btn btn-primary btn-md" href="calculate">View example!</a></p>
+        </div>
+      </div>
+
+      <br>
+
+      <div class="row">
+        <div class="col-lg-12">
+          <h2>Training a network: Random</h2>
+          <hr>
+
+          <div class="alert alert-danger" role="alert">This example is not completed yet!</div>
+
+          <p>Description.</p>
+          <p class="text-right"><a class="btn btn-primary btn-md" href="examplePath">View example!</a></p>
+        </div>
+      </div>
+
+      <br>
+
+      <div class="row">
+        <div class="col-lg-12">
+          <h2>Training a network: Brute force</h2>
+          <hr>
+
+          <div class="alert alert-danger" role="alert">This example is not completed yet!</div>
+
+          <p>Description.</p>
+          <p class="text-right"><a class="btn btn-primary btn-md" href="examplePath">View example!</a></p>
+        </div>
+      </div>
+
+      <br>
+
+      <div class="row">
+        <div class="col-lg-12">
+          <h2>Training a network: Gradient decent</h2>
+          <hr>
+
+          <div class="alert alert-danger" role="alert">This example is not completed yet!</div>
+
+          <p>Description.</p>
+          <p class="text-right"><a class="btn btn-primary btn-md" href="examplePath">View example!</a></p>
+        </div>
+      </div>
+
+      <br>
+
+      <div class="row">
+        <div class="col-lg-12">
+          <h2>Training a network: Genetic algorithm</h2>
+          <hr>
+
+          <div class="alert alert-danger" role="alert">This example is not completed yet!</div>
+
+          <p>Description.</p>
+          <p class="text-right"><a class="btn btn-primary btn-md" href="examplePath">View example!</a></p>
+        </div>
+      </div>
+
+      <br>
+
+      <div class="row">
+        <div class="col-lg-12">
+          <h2>Visualizing network using vis.js (Graph)</h2>
+          <hr>
+
+          <div class="alert alert-danger" role="alert">This example is not completed yet!</div>
+
+          <p>Description.</p>
+          <p class="text-right"><a class="btn btn-primary btn-md" href="examplePath">View example!</a></p>
+        </div>
+      </div>
+
+      <br>
+
+      <div class="row">
+        <div class="col-lg-12">
+          <h2>Exporting a network to file or string</h2>
+          <hr>
+
+          <p>Exporting a network to file or a string.</p>
+          <p class="text-right"><a class="btn btn-primary btn-md" href="export-network/">View example!</a></p>
+        </div>
+      </div>
+
+      <br>
+
+      <div class="row">
+        <div class="col-lg-12">
+          <h2>Importing a network from file or string</h2>
+          <hr>
+
+          <p>Importing a network from file or string.</p>
+          <p class="text-right"><a class="btn btn-primary btn-md" href="import-network/">View example!</a></p>
+        </div>
+      </div>
+
+      <br>
+
+      <div class="row">
+        <div class="col-lg-12">
+          <h2>Creating an autoencoder</h2>
+          <hr>
+
+          <div class="alert alert-danger" role="alert">This example is not completed yet!</div>
+
+          <p>Description.</p>
+          <p class="text-right"><a class="btn btn-primary btn-md" href="examplePath">View example!</a></p>
+        </div>
+      </div>
+
+      <br>
+
+      <div class="row">
+        <div class="col-lg-12">
+          <h2>Complete XOR example</h2>
+          <hr>
+
+          <div class="alert alert-danger" role="alert">This example is not completed yet!</div>
+
+          <p>Description.</p>
+          <p class="text-right"><a class="btn btn-primary btn-md" href="examplePath">View example!</a></p>
+        </div>
+      </div>
+
+      <br>
+
+      <div class="row">
+        <div class="col-lg-12">
+          <h2>Complete XOR example</h2>
+          <hr>
+
+          <div class="alert alert-danger" role="alert">This example is not completed yet!</div>
+
+          <p>Description.</p>
+          <p class="text-right"><a class="btn btn-primary btn-md" href="examplePath">View example!</a></p>
+        </div>
+      </div>
+
+      <br>
+
+      <div class="row">
+        <div class="col-lg-12">
+          <h2>Complete AND example</h2>
+          <hr>
+
+          <div class="alert alert-danger" role="alert">This example is not completed yet!</div>
+
+          <p>Description.</p>
+          <p class="text-right"><a class="btn btn-primary btn-md" href="examplePath">View example!</a></p>
         </div>
       </div>
 
