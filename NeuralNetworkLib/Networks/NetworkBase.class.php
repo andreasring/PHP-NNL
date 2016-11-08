@@ -2,7 +2,9 @@
 namespace NeuralNetworkLib\Networks;
 
 use \NeuralNetworkLib\Components as Components;
-use \NeuralNetworkLib\Components\Layer\Layer as Layer;
+use \NeuralNetworkLib\Components\Layer\HiddenLayer as HiddenLayer;
+use \NeuralNetworkLib\Components\Layer\InputLayer as InputLayer;
+use \NeuralNetworkLib\Components\Layer\OutputLayer as OutputLayer;
 use \NeuralNetworkLib\ActivationFunctions as ActivationFunctions;
 use \NeuralNetworkLib\TrainingAlgorithms as TrainingAlgorithms;
 use \NeuralNetworkLib\Helpers as Helpers;
@@ -13,6 +15,11 @@ use \NeuralNetworkLib\Helpers as Helpers;
  *
  */
 class NetworkBase {
+
+  /**
+   * Network configuration
+   */
+  public $configuration = [];
 
   /**
    * Input layer
@@ -65,26 +72,18 @@ class NetworkBase {
    * Network base construtor
    *
    */
-  public function __construct() {
-    // Nothing to do here for now
+  public function __construct($config = []) {
+    $this->readConfig($config);
   }
 
 
   // --------------------------------------------------------------------------------------------------------
   /**
-   * Create a new layer for this network
-   *
-   */
-  public function createLayer($previousLayer, $nextLayer, $layerName, $layerPosition, $neuronCount) {
-    // Create the layer
-    $network        = $this;
-    $layer          = new Layer($network, $previousLayer, $nextLayer, $layerName, $layerPosition, $neuronCount);
-
-    // Add the layer to the network layer store
-    $this->addLayer($layer);
-
-    // Return the newly created layer
-    return $layer;
+  * Allows user defined configurations to override default configurations
+  *
+  */
+  protected function readConfig($userDefinedConfig) {
+    $this->configuration = array_merge($this->configuration, $userDefinedConfig);
   }
 
 

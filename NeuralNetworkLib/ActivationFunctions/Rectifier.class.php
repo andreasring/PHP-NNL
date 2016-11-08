@@ -5,7 +5,7 @@ namespace NeuralNetworkLib\ActivationFunctions;
  * Activation function for neurons: Rectifier (ReLU)
  *
  */
-class Rectifier {
+class Rectifier extends ActivationFunctionBase {
 
   // --------------------------------------------------------------------------------------------------------
   /**

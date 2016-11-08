@@ -2,33 +2,28 @@
 namespace NeuralNetworkLib\ActivationFunctions;
 
 /**
- * Activation function for neurons: Sigmoid
+ * Activation function base class
  *
  */
-class Sigmoid extends ActivationFunctionBase {
+class ActivationFunctionBase {
 
   // --------------------------------------------------------------------------------------------------------
   /**
-   * Sigmoid activation function
-   *
-   * Returns a value between 0 and 1
+   * Calculate the activation function
    *
    */
   public static function calculate($x) {
-    return 1 / (1 + exp(-$x));
-
-    // Alternative syntax
-    // return 1 / (1 + pow(M_E, -$x));
+    die('Activation function calculate not implemented');
   }
 
 
   // --------------------------------------------------------------------------------------------------------
   /**
-   * Sigmoid activation function derivative
+   * Calculate the activation function's derivative
    *
    */
   public static function derivative($x) {
-    return self::calculate($x) * (1 - self::calculate($x));
+    die('Activation function derivative not implemented');
   }
 
 }

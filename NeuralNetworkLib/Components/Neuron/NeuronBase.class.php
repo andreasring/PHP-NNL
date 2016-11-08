@@ -131,7 +131,7 @@ class NeuronBase {
    * Run whatever activation function is used
    *
    */
-  private function runActivationFunction($value) {
+  protected function runActivationFunction($value) {
     return call_user_func($this->activationFunction, $value);
   }
 

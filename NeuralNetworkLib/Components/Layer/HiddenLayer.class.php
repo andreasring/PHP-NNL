@@ -5,10 +5,10 @@ use \NeuralNetworkLib\Components\Neuron\BiasNeuron as BiasNeuron;
 use \NeuralNetworkLib\Components\Synapse\Synapse as Synapse;
 
 /**
- * Normal layer class
+ * Hidden layer class
  *
  */
-class Layer extends LayerBase {
+class HiddenLayer extends LayerBase {
 
   /**
    * The layer's bias neuron

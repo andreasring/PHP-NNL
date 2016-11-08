@@ -5,7 +5,7 @@ namespace NeuralNetworkLib\ActivationFunctions;
  * Activation function for neurons: Step
  *
  */
-class Step {
+class Step extends ActivationFunctionBase {
 
   // --------------------------------------------------------------------------------------------------------
   /**

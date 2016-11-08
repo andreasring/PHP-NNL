@@ -5,7 +5,7 @@ namespace NeuralNetworkLib\ActivationFunctions;
  * Activation function for neurons: Identity
  *
  */
-class Identity {
+class Identity extends ActivationFunctionBase {
 
   // --------------------------------------------------------------------------------------------------------
   /**

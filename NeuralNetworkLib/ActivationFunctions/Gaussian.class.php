@@ -5,7 +5,7 @@ namespace NeuralNetworkLib\ActivationFunctions;
  * Activation function for neurons: Gaussian
  *
  */
-class Gaussian {
+class Gaussian extends ActivationFunctionBase {
 
   // --------------------------------------------------------------------------------------------------------
   /**

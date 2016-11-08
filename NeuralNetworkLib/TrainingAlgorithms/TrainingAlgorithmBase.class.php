@@ -36,7 +36,7 @@ class TrainingAlgorithmBase {
    */
   public function __construct($network, $config = []) {
     $this->network = $network;
-    $this->config = $this->readConfig($config);
+    $this->readConfig($config);
   }
 
 
@@ -46,7 +46,7 @@ class TrainingAlgorithmBase {
    *
    */
    protected function readConfig($userDefinedConfig) {
-     return $this->configuration = array_merge($this->configuration, $userDefinedConfig);
+     $this->configuration = array_merge($this->configuration, $userDefinedConfig);
    }
 
 

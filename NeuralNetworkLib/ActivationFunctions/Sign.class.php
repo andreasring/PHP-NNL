@@ -5,7 +5,7 @@ namespace NeuralNetworkLib\ActivationFunctions;
  * Activation function for neurons: Sign
  *
  */
-class Sign {
+class Sign extends ActivationFunctionBase {
 
   // --------------------------------------------------------------------------------------------------------
   /**

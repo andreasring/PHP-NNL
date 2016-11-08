@@ -2,7 +2,9 @@
 namespace NeuralNetworkLib\Networks;
 
 use \NeuralNetworkLib\Components as Components;
-use \NeuralNetworkLib\Components\Layer\Layer as Layer;
+use \NeuralNetworkLib\Components\Layer\HiddenLayer as HiddenLayer;
+use \NeuralNetworkLib\Components\Layer\InputLayer as InputLayer;
+use \NeuralNetworkLib\Components\Layer\OutputLayer as OutputLayer;
 use \NeuralNetworkLib\ActivationFunctions as ActivationFunctions;
 use \NeuralNetworkLib\TrainingAlgorithms as TrainingAlgorithms;
 use \NeuralNetworkLib\Helpers as Helpers;
@@ -14,17 +16,33 @@ use \NeuralNetworkLib\Helpers as Helpers;
  */
 class FeedForwardNetwork extends NetworkBase {
 
+  /**
+   * Defines default configuration for this network
+   */
+  public $configuration = [
+    'structure' => [
+      'input'   => 2,
+      'hidden'  => [3],
+      'output'  => 1
+    ],
+    'biasNeuron' => TRUE
+  ];
+
+
   // --------------------------------------------------------------------------------------------------------
   /**
    * Network construtor
    *
    * Initializes the layers
    */
-  public function __construct($inputLayerNodeCount, $hiddenLayerNodeCounts, $outputLayerNodeCount) {
+  public function __construct($config) {
+    // Do whatever the parent want to do
+    parent::__construct($config);
+
     // Create the neurons
-    $this->buildInputLayer($inputLayerNodeCount);
-    $this->buildHiddenLayer($hiddenLayerNodeCounts);
-    $this->buildOutputLayer($outputLayerNodeCount);
+    $this->buildInputLayer();
+    $this->buildHiddenLayer();
+    $this->buildOutputLayer();
 
     // Connect them
     $this->connectNeurons();
@@ -36,13 +54,20 @@ class FeedForwardNetwork extends NetworkBase {
    * Builds the input layer
    *
    */
-  private function buildInputLayer($neuronCount) {
+  private function buildInputLayer() {
+    // How many neurons do we want in the input layer?
+    $neuronCount = $this->configuration['structure']['input'];
+
     // Create the input layer
+    $network        = $this;
     $previousLayer  = NULL; // There is no previous layer
     $nextLayer      = NULL; // We dont know this yet
     $layerName      = 'Input layer';
     $layerPosition  = 1;
-    $inputLayer     = $this->createLayer($previousLayer, $nextLayer, $layerName, $layerPosition, $neuronCount);
+    $inputLayer     = new InputLayer($network, $previousLayer, $nextLayer, $layerName, $layerPosition, $neuronCount);
+
+    // Add the layer to the network layer store
+    $this->addLayer($inputLayer);
 
     // Set the newly created layer to the input layer
     $this->inputLayer = $inputLayer;
@@ -54,19 +79,22 @@ class FeedForwardNetwork extends NetworkBase {
    * Builds the hidden layer
    *
    */
-  private function buildHiddenLayer($layerStructure) {
+  private function buildHiddenLayer() {
+    // What should the hidden layers look like?
+    $hiddenLayerStructure = $this->configuration['structure']['hidden'];
+
     // Easier to only work with arrays
-    if(!is_array($layerStructure)) {
-      $layerStructure = [$layerStructure];
+    if(!is_array($hiddenLayerStructure)) {
+      $hiddenLayerStructure = [$hiddenLayerStructure];
     }
 
     // For each of the layer configurations
     $firstHiddenLayer = TRUE;
-    for($i=0;$i<count($layerStructure);$i++) {
+    for($i=0;$i<count($hiddenLayerStructure);$i++) {
 
       // Create hidden layer
       // How many neurons in this hidden layer?
-      $layerNeuronCount = $layerStructure[$i];
+      $hiddenLayerNeuronCount = $hiddenLayerStructure[$i];
       // If this is the first hidden layer, we set the previous layer to the input layer
       if($firstHiddenLayer) {
         $previousLayer  = $this->inputLayer;
@@ -74,14 +102,23 @@ class FeedForwardNetwork extends NetworkBase {
         // Else we set it to the previously created hidden layer
         $previousLayer = $this->hiddenLayers[$i-1];
       }
+      $network        = $this;
       $nextLayer      = NULL; // We dont know this yet
       $layerName      = 'Hidden layer '.$i;
       $layerPosition  = $i+2;
-      $aHiddenLayer   = $this->createLayer($previousLayer, $nextLayer, $layerName, $layerPosition, $layerNeuronCount);
+      $aHiddenLayer   = new HiddenLayer($network, $previousLayer, $nextLayer, $layerName, $layerPosition, $hiddenLayerNeuronCount);
+
+      // Add the layer to the network layer store
+      $this->addLayer($aHiddenLayer);
+
+      // Add new hidden layer to hidden layers list
+      $this->hiddenLayers[] = $aHiddenLayer;
 
       // Create and connect bias neuron
-      $aHiddenLayer->createBiasNeuron();
-      $aHiddenLayer->connectBiasNeuron();
+      if($this->configuration['biasNeuron']) {
+        $aHiddenLayer->createBiasNeuron();
+        $aHiddenLayer->connectBiasNeuron();
+      }
 
       // Update the previous hidden layer's next layer
       if(!$firstHiddenLayer) {
@@ -89,9 +126,6 @@ class FeedForwardNetwork extends NetworkBase {
       } else {
         $this->inputLayer->nextLayer = $aHiddenLayer;
       }
-
-      // Add new hidden layer to hidden layers list
-      $this->hiddenLayers[] = $aHiddenLayer;
 
       // The next layer is no longer the first hidden layer
       $firstHiddenLayer = FALSE;
@@ -104,20 +138,29 @@ class FeedForwardNetwork extends NetworkBase {
    * Builds the input layer
    *
    */
-  private function buildOutputLayer($neuronCount) {
+  private function buildOutputLayer() {
+    // How many neurons do we want in the output layer?
+    $neuronCount = $this->configuration['structure']['output'];
+
     // Create the output layer
+    $network        = $this;
     $previousLayer  = $this->hiddenLayers[count($this->hiddenLayers)-1]; // The last hidden layer
     $nextLayer      = NULL; // There is no next layer after the output layer
     $layerName      = 'Output layer';
     $layerPosition  = count($this->hiddenLayers)+2;
-    $outputLayer     = $this->createLayer($previousLayer, $nextLayer, $layerName, $layerPosition, $neuronCount);
+    $outputLayer    = new OutputLayer($network, $previousLayer, $nextLayer, $layerName, $layerPosition, $neuronCount);
 
-    // Create and connect bias neuron
-    $outputLayer->createBiasNeuron();
-    $outputLayer->connectBiasNeuron();
+    // Add the layer to the network layer store
+    $this->addLayer($outputLayer);
 
     // Set the newly created layer to the output layer
     $this->outputLayer = $outputLayer;
+
+    // Create and connect bias neuron
+    if($this->configuration['biasNeuron']) {
+      $outputLayer->createBiasNeuron();
+      $outputLayer->connectBiasNeuron();
+    }
 
     // Also update the last hidden layer next layer
     $this->hiddenLayers[count($this->hiddenLayers)-1]->nextLayer = $outputLayer;
@@ -130,27 +173,6 @@ class FeedForwardNetwork extends NetworkBase {
    *
    */
   private function connectNeurons() {
-    // Add input synapses to the input layer
-    foreach($this->inputLayer->neurons as $inputLayerNeuron) {
-      // Ignore bioas neuron
-      if(isset($inputLayerNeuron->isBiasNeuron)) {
-        continue;
-      }
-
-      // Create and connect a synapse to the neuron
-      $synapse = $inputLayerNeuron->linkNeuronTo($inputLayerNeuron, NULL, FALSE);
-    }
-
-    // Add output synapses to the output layer
-    foreach($this->outputLayer->neurons as $outputLayerNeuron) {
-      // Ignore if bias neuron
-      if(isset($outputLayerNeuron->isBiasNeuron)) {
-        continue;
-      }
-      // Create and connect a synapse to the neuron
-      $synapse = $outputLayerNeuron->linkNeuronTo(NULL, $outputLayerNeuron);
-    }
-
     // Connect the input layer to the first hidden layer
     $this->connectLayers($this->inputLayer, $this->hiddenLayers[0]);
 
@@ -225,7 +247,9 @@ class FeedForwardNetwork extends NetworkBase {
         continue;
       }
       $neuron->calculate();
-      $output[] = $neuron->outputSynapses[0]->getValue();
+
+      // Since we are using OutputNeuron's in the output layer we can use getOutput()
+      $output[] = $neuron->getOutput();
     }
 
     return $output;
@@ -246,8 +270,8 @@ class FeedForwardNetwork extends NetworkBase {
         continue;
       }
 
-      // TODO WHAT ABOUT BIAS NEURON? COULD BE INDEX 0?
-      $neuron->inputSynapses[0]->setValue($data[$index]);
+      // Since we are using InputNeuron's for the input layey we can use setInputData()
+      $neuron->setInputData($data[$index]);
     }
   }
 

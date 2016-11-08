@@ -1,44 +1,21 @@
 ---------------------------------------------------------------------
 TODO / Review
 ---------------------------------------------------------------------
-- Create a base class for networks
-- Create a base class for training algorithms?
-- Create a base class for Activation functions?
-- Create a base class for the various components?
-
-- Bias neuron
-  - Currently there is one bias neuron for each and every layer. But do we need this? Should be sufficient to just have one bias neuron, for example in the input layer and connect that to all the other neurons in the network?
-
-- Genetic algoritm
-
-- Particle swarm optimization/training algorithm (https://www.youtube.com/watch?v=sB1n9a9yxJk)
 
 - Activation function
-  - Possible other functions to implemen
-    - Linear
-
-
-- Create a standardised way to create layers, neurons, synapses and weights so that they get automatic ID's and are stored in sentralized places
+   - Edit step (and sign?) to have a threshold/offset parameter?
 
 - Normalization
   - Create normalization helper functions
 
-
 - Make weights into objects
   - This makes it easy to access them from some centralized place
-- Make all objects avalible through centralized stores?
-
 
 - Learning rate
   - We should have a global setLearningRate() that sets a learning rate for all neurons AND create a setLearningRate for each neuron to do custom learning rates for each neuron
 
 - Momentum
-  - Currently not implemented
-
-- Save and load function needs to be changed so we can load and save in-memory.
-  - Adding export and import functions that takes raw data
-  - Add functions loadFromFile and saveToFile perhaps?
-    - Or exportToFile and importFromFile?
+  - Currently not implemented -> Option for gradient decent
 
 - Making a nicer set of API functions for generating a totally custom network: That is, you do not send the structure of the network to the contrusctor but you do things like addLayer(), addNeuron(), addSynapse and so on. These functions should be the ones used by the more automated construct API too.
 
@@ -48,9 +25,8 @@ TODO / Review
 
 - Could we maybe do this all in database format? Sqlite or mysql with memory tables? Only requirement is that the performance has to be acceptable.
 
-- Create a loss function namespace?
+- Create a loss and or cost function namespace?
   - Should be easy enough to just supply the functions with expected output and actual output and then do whatever they want with that
-
 
 ---------------------------------------------------------------------
 Random notes
@@ -64,8 +40,6 @@ Autoencoders
   - Sparse autoencoder
   - Variational autoencoder (VAE)
   - Contractive autoencoder
-
-Threshold function in neuron before activation function!?
 
 Overfitting
   - Dropout
@@ -83,7 +57,6 @@ Error calculation
   - Root mean squered error (RMS/RMSE)
   - Arctan
 
-Cost function?
 
 Softmax
 
@@ -120,16 +93,8 @@ Labeled/supervised/classifier
   - Deep belief network
 
 
-differential evolution
-
 Steepest gradient Decent
-Conjugate gradient decent
 
 Reinforcement learning?
-
-More activation functions
-  - Ramp
-  - Edit step (and sign?) to have a threshold/offset parameter?
-
 
 Vectorization of layers?, neurons?, synapses?, weights and values

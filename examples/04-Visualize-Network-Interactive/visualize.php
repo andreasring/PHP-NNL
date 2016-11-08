@@ -3,16 +3,32 @@
   // Include the autoloader
   include('../../autoloader.php');
 
+
   // Create a simple network
-  $network = new NeuralNetworkLib\Networks\FeedForwardNetwork(2, [3], 1);
+  $networkConfig = [
+    'structure' => [
+      'input' => 2,
+      'hidden' => [3],
+      'output' => 1
+    ]
+  ];
+  $network = new NeuralNetworkLib\Networks\FeedForwardNetwork($networkConfig);
 
-  $gradientDecentTrainer = new NeuralNetworkLib\TrainingAlgorithms\GradientDecent($network);
 
+  // Create a gradient decent trainer
+  $gradientDecentConfig = [
+    'trainingRounds' => 1,
+    'learningRate' => 0.1
+  ];
+  $gradientDecentTrainer = new NeuralNetworkLib\TrainingAlgorithms\GradientDecent($network, $gradientDecentConfig);
+
+  // Add training data
   $gradientDecentTrainer->addTrainingData([1, 1], [1]);
   $gradientDecentTrainer->addTrainingData([0, 0], [1]);
   $gradientDecentTrainer->addTrainingData([1, 0], [0]);
   $gradientDecentTrainer->addTrainingData([0, 1], [0]);
 
+  // Train
   $gradientDecentTrainer->train();
 
   /************************************************************************************************************************/
@@ -481,7 +497,11 @@
               if(neuron.isBiasNeuron) {
                 return;
               }
-              latestInputValues.push(neuron.inputSynapses[0].value);
+              if(neuron.inputData != undefined) {
+                latestInputValues.push(neuron.inputData);
+              } else {
+                latestInputValues.push(neuron.inputSynapses[0].value);
+              }
             });
             this.latestInputValues = latestInputValues;
 

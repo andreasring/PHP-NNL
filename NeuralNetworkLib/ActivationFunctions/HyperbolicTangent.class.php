@@ -5,7 +5,7 @@ namespace NeuralNetworkLib\ActivationFunctions;
  * Activation function for neurons: Hyperbolic Tangent
  *
  */
-class HyperbolicTangent {
+class HyperbolicTangent extends ActivationFunctionBase {
 
   // --------------------------------------------------------------------------------------------------------
   /**

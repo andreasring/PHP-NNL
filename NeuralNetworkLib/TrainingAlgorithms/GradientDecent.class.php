@@ -38,7 +38,6 @@ class GradientDecent extends TrainingAlgorithmBase {
         $expectedOutputs  = $trainingData[1];
         $networkOutputs   = $network->calculate($networkInputData);
 
-
         // Keep track of the error rate
         $innerError = 0.0;
         foreach($networkOutputs as $index => $networkOutput) {

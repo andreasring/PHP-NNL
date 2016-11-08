@@ -5,7 +5,7 @@ namespace NeuralNetworkLib\TrainingAlgorithms;
 /**
  * Training algorithm class: Particle swarm
  *
- *
+ * https://www.youtube.com/watch?v=sB1n9a9yxJk
  *
  */
 class ParticleSwarm extends TrainingAlgorithmBase {
