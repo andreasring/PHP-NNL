@@ -1,6 +1,8 @@
 <?php
 namespace NeuralNetworkLib\TrainingAlgorithms;
 
+use \NeuralNetworkLib\CostFunctions as CostFunctions;
+
 // --------------------------------------------------------------------------------------------------------------------------
 /**
  * Training algorithm class: Gradient Decent
@@ -11,9 +13,12 @@ class GradientDecent extends TrainingAlgorithmBase {
   /**
    * Defines default configuration for this algorithm
    */
-  protected $configuration = [
+  public $configuration = [
+    'recordErrorRate' => TRUE,
     'trainingRounds' => 1000,
-    'learningRate' => 0.1
+    'learningRate' => 0.1,
+    'momentumEnabled'=> TRUE,
+    'momentumValue' => 0.2
   ];
 
 
@@ -23,13 +28,15 @@ class GradientDecent extends TrainingAlgorithmBase {
    *
    */
   public function train() {
+    $recordErrorRate  = $this->configuration['recordErrorRate'];
     $trainingRounds   = $this->configuration['trainingRounds'];
     $learningRate     = $this->configuration['learningRate'];
+    $momentumEnabled  = $this->configuration['momentumEnabled'];
+    $momentumValue    = $this->configuration['momentumValue'];
     $network          = $this->network;
     $trainingDatas    = $this->trainingData;
 
     $error = 0.0;
-    $previousError = 0.0;
     for($i=0;$i<$trainingRounds;$i++) {
 
       $error = 0.0;
@@ -39,17 +46,8 @@ class GradientDecent extends TrainingAlgorithmBase {
         $networkOutputs   = $network->calculate($networkInputData);
 
         // Keep track of the error rate
-        $innerError = 0.0;
-        foreach($networkOutputs as $index => $networkOutput) {
-          $expectedOutput = $expectedOutputs[$index];
-          $innerError += pow($expectedOutput - $networkOutput, 2);
-          //$innerError += ($expectedOutput - $networkOutput);
-        }
-        $innerError = $innerError / count($networkOutputs);
-        $innerError = sqrt($innerError);
-
+        $innerError = CostFunctions\RootMeanSquaredError::calculate($networkOutputs, $expectedOutputs);
         $error += $innerError;
-        //var_dump($innerError);
 
 
         // Backpropagation ---------------------------------------------------------------------------------
@@ -113,12 +111,24 @@ class GradientDecent extends TrainingAlgorithmBase {
               $synapseWeight = $inputSynapse->getWeight();
               $synapseValue = $inputSynapse->getValue();
 
-              // TODO This is where we want to do momentum stuff
-
               // Multiply the error gradient of the neuron with the synapse value and the learning rate
               $weightCorrection = $learningRate * $synapseValue * $neuron->errorGradient;
-              // Sum the synapse weight witht he weight correction
-              $newWeight = $synapseWeight + $weightCorrection;
+
+              // If momentum enabled
+              if($momentumEnabled) {
+                // Get the previous weight correction if any, otherwise just use zero
+                $previousWeightCorrection = $inputSynapse->previousWeightCorrection ?? 0;
+
+                // Add inn a bit of the previous weight correction
+                $weightCorrection += ($momentumValue * $previousWeightCorrection);
+
+                // Remember the weight correction for next time
+                $inputSynapse->previousWeightCorrection = $weightCorrection;
+              }
+
+              // Sum the weight correction with the old synapse weight
+              $newWeight = $weightCorrection + $synapseWeight;
+
               // Set new weight
               $inputSynapse->setWeight($newWeight);
             }
@@ -130,18 +140,19 @@ class GradientDecent extends TrainingAlgorithmBase {
 
         // END Backpropagation ---------------------------------------------------------------------------------
 
-
-
       }
 
+      // Average sample data error for this round
       $error = $error / count($trainingDatas);
-      var_dump($error);
 
-      //$network->save('top_gradient_net.net');
+      // Record error rate if wanted
+      if($recordErrorRate) {
+        $this->recordErrorValue($error);
+      }
+
+
     }
 
-    //echo('Setting network to the best one saved.<br>');
-    //$network->load('top_gradient_net.net');
   }
 
 }

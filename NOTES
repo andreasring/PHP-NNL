@@ -2,9 +2,6 @@
 TODO / Review
 ---------------------------------------------------------------------
 
-- Activation function
-   - Edit step (and sign?) to have a threshold/offset parameter?
-
 - Normalization
   - Create normalization helper functions
 
@@ -27,6 +24,7 @@ TODO / Review
 
 - Create a loss and or cost function namespace?
   - Should be easy enough to just supply the functions with expected output and actual output and then do whatever they want with that
+
 
 ---------------------------------------------------------------------
 Random notes

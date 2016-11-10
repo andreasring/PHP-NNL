@@ -11,22 +11,27 @@ class TrainingAlgorithmBase {
   /**
    * The network to train
    */
-  protected $network;
+  public $network;
 
   /**
    * Trainer algorithm configuration
    */
-  protected $configuration;
+  public $configuration = [];
 
   /**
    * Training data
    */
-  protected $trainingData;
+  public $trainingData;
 
   /**
    * Control data
    */
-  protected $controlData;
+  public $controlData;
+
+  /**
+   * Stores the recorded error values if enabled
+   */
+  public $recordedErrorValues = [];
 
 
   // --------------------------------------------------------------------------------------------------------
@@ -45,28 +50,58 @@ class TrainingAlgorithmBase {
    * Allows user defined configurations to override default configurations
    *
    */
-   protected function readConfig($userDefinedConfig) {
-     $this->configuration = array_merge($this->configuration, $userDefinedConfig);
-   }
+  public function readConfig($userDefinedConfig) {
+    $this->configuration = array_merge($this->configuration, $userDefinedConfig);
+  }
 
 
-   // --------------------------------------------------------------------------------------------------------
-   /**
-    * Add training data to the training algorithm
-    *
-    */
-    public function addTrainingData($input, $output) {
-      $this->trainingData[] = [$input, $output];
-    }
+  // --------------------------------------------------------------------------------------------------------
+  /**
+   * Get a configuration value
+   *
+   */
+  public function getConfig($configName) {
+    return $this->configuration[$configName];
+  }
 
 
-    // --------------------------------------------------------------------------------------------------------
-    /**
-     * Add control data to the training algorithm
-     *
-     */
-     public function addControlData($input, $output) {
-       $this->controlData[] = [$input, $output];
-     }
+  // --------------------------------------------------------------------------------------------------------
+  /**
+   * Get a configuration value
+   *
+   */
+  public function setConfig($configName, $configValue) {
+    $this->configuration[$configName] = $configValue;
+  }
+
+
+  // --------------------------------------------------------------------------------------------------------
+  /**
+  * Add training data to the training algorithm
+  *
+  */
+  public function addTrainingData($input, $output) {
+    $this->trainingData[] = [$input, $output];
+  }
+
+
+  // --------------------------------------------------------------------------------------------------------
+  /**
+  * Add control data to the training algorithm
+  *
+  */
+  public function addControlData($input, $output) {
+    $this->controlData[] = [$input, $output];
+  }
+
+
+  // --------------------------------------------------------------------------------------------------------
+  /**
+  * Adds a error value to the recorded error values
+  *
+  */
+  public function recordErrorValue($errorValue) {
+    $this->recordedErrorValues[] = $errorValue;
+  }
 
 }

@@ -1,6 +1,8 @@
 <?php
 namespace NeuralNetworkLib\Components\Synapse;
 
+use \NeuralNetworkLib\Components\Weight\Weight as Weight;
+
 /**
  * Synapse base class
  *
@@ -42,22 +44,29 @@ class SynapseBase {
    */
   public $weightChangeDisabled = FALSE;
 
+  /**
+   * The network the weight is part of
+   */
+  protected $network;
+
 
   // --------------------------------------------------------------------------------------------------------
   /**
    * Synapse base connstruct
    *
    */
-  public function __construct($inputNeuron = NULL, $outputNeuron = NULL, $value = 0.0, $weight = 0.0) {
+  public function __construct($network, $inputNeuron = NULL, $outputNeuron = NULL, $value = 0.0, $weight = 0.0) {
     // Auto incrementing ID
     static $synapseID     = 0;
     $this->ID             = $synapseID++;
 
     // Set data
+    $this->network        = $network;
     $this->inputNeuron    = $inputNeuron;
     $this->outputNeuron   = $outputNeuron;
     $this->value          = $value;
-    $this->weight         = $weight;
+    //$this->weight         = $weight;
+    $this->weight         = new Weight($network, $weight);
   }
 
 
@@ -113,7 +122,8 @@ class SynapseBase {
     if($this->weightChangeDisabled) {
       return;
     }
-    $this->weight = $weight;
+    //$this->weight = $weight;
+    $this->weight->value = $weight;
   }
 
 
@@ -123,7 +133,7 @@ class SynapseBase {
    *
    */
   public function getWeight() {
-    return $this->weight;
+    return $this->weight->value;
   }
 
 }

@@ -150,7 +150,7 @@ class NeuronBase {
     // Create new synapse
     $value            = 0.0;
     $weight           = Helpers\Misc::generateRandomWeight();
-    $synapse          = new Synapse($inputNeuron, $outputNeuron, $value, $weight);
+    $synapse          = new Synapse($this->network, $inputNeuron, $outputNeuron, $value, $weight);
 
     // Add synapse to this neuron's output synapses
     if($inputNeuron) { // Nasty hack

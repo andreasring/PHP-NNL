@@ -8,36 +8,48 @@
   $networkConfig = [
     'structure' => [
       'input' => 2,
-      'hidden' => [3],
+      'hidden' => [2],
       'output' => 1
     ]
   ];
   $network = new NeuralNetworkLib\Networks\FeedForwardNetwork($networkConfig);
 
 
-  // Create a gradient decent trainer
-  $gradientDecentConfig = [
-    'trainingRounds' => 1000,
-    'learningRate' => 0.1,
-    'momentumEnabled' => TRUE,
-    'momentumValue' => 0.1
+  // Create a particle swarm trainer
+  $particleSwarmConfig = [
+    'recordErrorRate'     => TRUE,
+    'trainingRounds'      => 25,
+    'maxStopError'        => 0.01,
+    'numParticles'        => 1000,
+    'globalAcceleration'  => 2,
+    'socialAcceleration'  => 2,
+    'inertia'             => 1,
+    'inertiaDampingEnabled' => TRUE,
+    'inertiaDamping'      => 0.99,
+    'clampPositionValues' => TRUE,
+    'minPositionValue'    => -15,
+    'maxPositionValue'    => 15,
+    'clampVelocityValues' => TRUE,
+    'maxVelocityValue'    => 2,
+    'minVelocityValue'    => -2,
+    'autoClercKennedy2002Values' => TRUE
   ];
-  $gradientDecentTrainer = new NeuralNetworkLib\TrainingAlgorithms\GradientDecent($network, $gradientDecentConfig);
+  $particleSwarmTrainer = new NeuralNetworkLib\TrainingAlgorithms\ParticleSwarm($network, $particleSwarmConfig);
 
 
   // Add training data (XOR)
-  $gradientDecentTrainer->addTrainingData([1, 1], [0]);
-  $gradientDecentTrainer->addTrainingData([0, 0], [0]);
-  $gradientDecentTrainer->addTrainingData([1, 0], [1]);
-  $gradientDecentTrainer->addTrainingData([0, 1], [1]);
+  $particleSwarmTrainer->addTrainingData([1, 1], [0]);
+  $particleSwarmTrainer->addTrainingData([0, 0], [0]);
+  $particleSwarmTrainer->addTrainingData([1, 0], [1]);
+  $particleSwarmTrainer->addTrainingData([0, 1], [1]);
 
 
   // Train
-  $gradientDecentTrainer->train();
+  $particleSwarmTrainer->train();
 
 
   // Fetch the recorded error rate
-  $recordedErrorRate = $gradientDecentTrainer->recordedErrorValues;
+  $recordedErrorRate = $particleSwarmTrainer->recordedErrorValues;
 
   /************************************************************************************************************************/
 
@@ -46,7 +58,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Training a network: Gradient Decent</title>
+    <title>Training a network: Particle Swarm</title>
 
     <!-- jQuery 3.1.1 -->
     <script src="https://code.jquery.com/jquery-3.1.1.js" integrity="sha256-16cdPddA6VdVInumRGo6IbivbERE8p7CQR3HzTBuELA=" crossorigin="anonymous"></script>
@@ -89,7 +101,7 @@
     <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container">
         <div class="navbar-header">
-          <a class="navbar-brand" href="">Training a network: Gradient Decent</a>
+          <a class="navbar-brand" href="">Training a network: Particle Swarm</a>
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
@@ -106,10 +118,10 @@
 
       <div class="row">
         <div class="col-lg-12">
-          <h1>Training a network using Gradient Decent</h1>
+          <h1>Training a network using Particle Swarm</h1>
           <hr>
 
-          <p>Gradient decent info</p>
+          <p>Particle swarm info</p>
         </div>
       </div>
 
@@ -119,7 +131,7 @@
           <hr>
 
           <p>Some text</p>
-          <script src="https://gist.github.com/andreasring/a72061915b55af8f8d5605e01dcb44c4.js"></script>
+          <script src="https://gist.github.com/andreasring/139c508a7ed2bcf97af52f7739086c14.js"></script>
 
         </div>
       </div>
@@ -204,13 +216,6 @@
           </script>
         </div>
       </div>
-
-
-
-
-
-
-
 
 
     </div>
